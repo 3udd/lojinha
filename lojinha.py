@@ -85,7 +85,7 @@ def cadastro(nome, email):
     cliente = {
         'nome': nome,
         'email': email,
-        'pedidos': {}
+        'pedidos': []
     }
 
     clientes[email] = cliente
@@ -94,31 +94,38 @@ def cadastro(nome, email):
 
 @app.get('/criar-pedido')
 def criar(email, id_pedido):
-    cliente = clientes[email]   # 'cliente' é apenas 1 cliente, enquanto 'clientes' é todos 
+    cliente = clientes[email]
 
     pedido = {
         'id pedido': id_pedido,
-        'itens': {}
+        'itens': []
     }
-    pedidos = cliente['pedidos']
-    
-    pedidos[id_pedido] = pedido
+
+    cliente['pedidos'].append(pedido)
 
     return loja
 
 
-@app.get('/adicionar-produto-pedido')
+@app.get('/adicionar-item-pedido')
 def adicionar(email, id_pedido, produto, valor):
     cliente = clientes[email]
-    pedido = cliente['pedidos'][id_pedido]
+
+    pedido_encontrado = None
+    for pedido in cliente['pedidos']:
+        if pedido['id pedido'] == id_pedido:
+            pedido_encontrado = pedido
+
+    if pedido_encontrado is None:
+        return "Erro: pedido não encontrado"
 
     produto_venda = {
         'produto': produto,
         'valor': valor
     }
-    pedido['itens'][produto] = produto_venda
+    pedido_encontrado['itens'].append(produto_venda)
 
     return loja
+
 
 
 @app.get('/')
