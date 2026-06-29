@@ -7,12 +7,14 @@ app = FastAPI()
 loja = {
     'categorias': {},
     'depositos': {},
-    'clientes': {}
+    'clientes': {},
+    'cupons': {}
 }
 #atalhos
 categorias = loja['categorias']
 depositos = loja['depositos']
 clientes = loja['clientes']
+cupons = loja['cupons']
 
  
 @app.get('/cadastrar-categoria')
@@ -110,6 +112,12 @@ def criar(email, id_pedido):
 def adicionar(email, id_pedido, produto, valor):
     cliente = clientes[email]
 
+    try:
+        valor = valor.replace(',', '.')
+        valor = float(valor)
+    except:
+        return 'Valor do produto inválido'
+
     pedido_encontrado = None
     for pedido in cliente['pedidos']:
         if pedido['id pedido'] == id_pedido:
@@ -126,6 +134,29 @@ def adicionar(email, id_pedido, produto, valor):
 
     return loja
 
+@app.get('/criar-cupom')
+def criar(codigo, desconto):
+    desconto = int(desconto)
+    cupons[codigo] = desconto
+    return loja
+
+
+@app.get('/aplicar-cupom-produto')
+def aplicar_cupom_produto(categoria, nome_produto, codigo_cupom):
+    if codigo_cupom not in cupons:
+        return 'Cupom não existe'
+
+    if categoria not in categorias:
+        return 'Categoria não existe'
+
+    for produto in categorias[categoria]:
+        if produto['nome'] == nome_produto:
+            desconto = cupons[codigo_cupom]
+            preco_original = float(produto['preco'])
+            produto['preco'] = preco_original * (1 - desconto / 100)
+            return loja
+
+    return 'Produto não existe'
 
 
 @app.get('/')
