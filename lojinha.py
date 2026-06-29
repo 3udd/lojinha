@@ -8,19 +8,21 @@ loja = {
     'categorias': {},
     'depositos': {},
     'clientes': {},
-    'cupons': {}
+    'cupons': {},
+    'fornecedores': {}
 }
-#atalhos
+
 categorias = loja['categorias']
 depositos = loja['depositos']
 clientes = loja['clientes']
 cupons = loja['cupons']
+fornecedores = loja['fornecedores']
 
  
 @app.get('/cadastrar-categoria')
 def cadastrar_categoria(nome):
     global loja
-    loja['categorias'][nome] = [] #adicionar produtos depois
+    loja['categorias'][nome] = []
     return loja
 
 
@@ -94,6 +96,7 @@ def cadastro(nome, email):
 
     return loja
 
+
 @app.get('/criar-pedido')
 def criar(email, id_pedido):
     cliente = clientes[email]
@@ -134,6 +137,7 @@ def adicionar(email, id_pedido, produto, valor):
 
     return loja
 
+
 @app.get('/criar-cupom')
 def criar(codigo, desconto):
     desconto = int(desconto)
@@ -142,7 +146,7 @@ def criar(codigo, desconto):
 
 
 @app.get('/aplicar-cupom-produto')
-def aplicar_cupom_produto(categoria, nome_produto, codigo_cupom):
+def aplicar(categoria, nome_produto, codigo_cupom):
     if codigo_cupom not in cupons:
         return 'Cupom não existe'
 
@@ -157,6 +161,49 @@ def aplicar_cupom_produto(categoria, nome_produto, codigo_cupom):
             return loja
 
     return 'Produto não existe'
+
+
+@app.get('/registrar-fornecedor')
+def registrar(cnpj, nome_empresa):
+    fornecedores[cnpj] = {
+        'nome_empresa': nome_empresa,
+        'catalogo': []
+    }
+    return loja
+
+
+@app.get('/adicionar-ao-catalogo')
+def adicionar(cnpj, nome_item, modelo):
+    if cnpj not in fornecedores:
+        return 'Fornecedor não existe'
+
+    item = {
+        'nome_item': nome_item,
+        'modelo': modelo,
+        'detalhes': {}
+    }
+    fornecedores[cnpj]['catalogo'].append(item)
+    return loja
+
+
+@app.get('/adicionar-especificacao')
+def adicionar(cnpj, nome_item, chave, valor):
+    if cnpj not in fornecedores:
+        return 'Fornecedor não existe'
+
+    catalogo = fornecedores[cnpj]['catalogo']
+    item_encontrado = None
+
+    for item in catalogo:
+        if item['nome_item'] == nome_item:
+            item_encontrado = item
+            break
+
+    if item_encontrado is None:
+        return 'Item não existe'
+
+    item_encontrado['detalhes'][chave] = valor
+    return loja
 
 
 @app.get('/')
